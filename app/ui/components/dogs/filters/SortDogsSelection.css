@@ -1,0 +1,62 @@
+.sort-selection {
+  padding: 10px 10px 20px;
+}
+
+.sort-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.sort-button {
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.sort-button::after {
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+.sort-button.asc {
+  background-color: #fff;
+  color: #333;
+}
+
+.sort-button.asc::after {
+  content: "\25B2";
+}
+
+.sort-button.desc {
+  background-color: #fff;
+  color: #333;
+}
+
+.sort-button.desc::after {
+  content: "\25BC";
+}
+
+.sort-button.selected {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.sort-button.selected:hover {
+  background-color: #fff;
+  color: #333;
+}
+
+.sort-button.selected.asc::after {
+  content: "\25B2";
+  color: #ccc;
+}
+
+.sort-button.selected.desc::after {
+  content: "\25BC";
+  color: #ccc;
+}

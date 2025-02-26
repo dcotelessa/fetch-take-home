@@ -1,0 +1,15 @@
+.size-selection {
+    padding: 10px 10px 20px;
+}
+
+.size-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.size-buttons button.active {
+  background-color: #66f;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.4);
+  transform: translateY(3px);
+}

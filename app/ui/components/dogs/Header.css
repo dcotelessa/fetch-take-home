@@ -1,0 +1,25 @@
+.header {
+  display: flex;
+  width: 95%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.header-logo {
+  display: flex;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.total-items, .total-pages, .total-starred {
+  margin-left: 20px;
+  margin-right: 20px;
+}

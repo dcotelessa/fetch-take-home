@@ -1,0 +1,12 @@
+.age-range {
+  padding: 10px 10px 20px;
+}
+
+.age-range input[type="range"] {
+  width: 80%;
+  margin: 10px;
+}
+
+.age-range input[type="checkbox"] {
+  margin-right: 10px;
+}

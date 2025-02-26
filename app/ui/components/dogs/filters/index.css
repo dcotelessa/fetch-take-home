@@ -1,0 +1,46 @@
+.filters-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
+.filters-buttons button {
+  display: flex;
+  align-items: center;
+}
+
+.filters-dropdown {
+  position: fixed;
+  top: 100vh;
+  left: 1;
+  background-color: #323;
+  border: 1px solid #ddd;
+  padding: 10px;
+  display: flex;
+  gap:20px;
+  width: 98vw;
+  z-index: 1; 
+}
+
+/* instead of rerendering component, just hide below view */
+/* then display on show */
+.filters-dropdown.show {
+  position:absolute;
+  top: unset;
+}
+
+.filters-dropdown button {
+  margin-top: 10px;
+}
+
+.filters-dropdown input[type="text"] {
+  width: 48vw;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.filters-dropdown .filters-column {
+  width:50%;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
