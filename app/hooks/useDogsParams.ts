@@ -11,7 +11,7 @@ export interface DogParams {
 	sort?: string;
 }
 
-interface DogSearchParams {
+export interface DogSearchParams {
 	resultIds: string[];
 	total: number; // total number of results, not just the current page
 	next: string | null; // a query to request the next page of results (if one exists)
