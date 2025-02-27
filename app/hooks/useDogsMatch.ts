@@ -39,7 +39,7 @@ const useDogsMatch = () => {
 					} else {
 						throw new Error(`response status: ${response.status}`);
 					}
-				} catch (err: any) {
+				} catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 					setError(`MATCH ERROR: ${err.message}`);
 				} finally {
 					setLoading(false);
@@ -49,7 +49,7 @@ const useDogsMatch = () => {
 			}
 		};
 		fetchMatch();
-	}, [starredDogsIds]);
+	}, [starredDogsIds, fetchUrl]);
 
 	useEffect(() => {
 		if (match) {
@@ -72,7 +72,7 @@ const useDogsMatch = () => {
 					} else {
 						throw new Error(`response status: ${response.status}`);
 					}
-				} catch (err: any) {
+				} catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 					setError(`MATCH ERROR: ${err.message}`);
 				} finally {
 					setLoading(false);
@@ -82,7 +82,7 @@ const useDogsMatch = () => {
 		} else {
 			setMatchedDogs([]);
 		}
-	}, [match]);
+	}, [match, fetchUrl]);
 
 	return { match, matchedDogs, loading, error };
 };

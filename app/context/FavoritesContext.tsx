@@ -11,7 +11,7 @@ interface FavoritesContextValue {
 
 const FavoritesContext = createContext<FavoritesContextValue>({
   starredDogsIds: [] as string[],
-  toggleFavorite: (_dogId: string) => {},
+  toggleFavorite: () => {},
   totalStarredDogsIds: 0,
 });
 

@@ -74,7 +74,7 @@ const useDogsParams = (externalParams: DogParams) => {
 		}
 
 		return queryParams.toString();
-	}, [externalParams]);
+	}, [externalParams, DEFAULT_SORT]);
 
 	const fetchDogs = useCallback(async () => {
 		setLoading(true);
@@ -96,7 +96,7 @@ const useDogsParams = (externalParams: DogParams) => {
 
 			const data = await response.json();
 			setSearchResults(data);
-		} catch (err: any) {
+		} catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 			setError(`DOGS PARAMS ERROR: ${err.message}`);
 		} finally {
 			setLoading(false);

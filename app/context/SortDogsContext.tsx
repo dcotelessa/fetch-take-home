@@ -14,7 +14,7 @@ interface SortDogsContext {
 
 const SortDogsContext = createContext<SortDogsContext>({
   sort: DEFAULT_SORT,
-  setSort: (_sort: string) => { },
+  setSort: () => { },
   DEFAULT_SORT,
 });
 

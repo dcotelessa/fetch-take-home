@@ -21,8 +21,8 @@ const AgeRangeContext = createContext<AgeRangeContextValue>({
   ageMax: MAX_AGE,
   ageMinEnabled: true,
   ageMaxEnabled: true,
-  handleAgeRangeChange: (_ageMin: number, _ageMax: number) => { },
-  handleCheckboxChange: (_type: 'min' | 'max') => { },
+  handleAgeRangeChange: () => { },
+  handleCheckboxChange: () => { },
   MAX_AGE,
 });
 

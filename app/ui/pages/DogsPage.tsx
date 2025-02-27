@@ -27,7 +27,7 @@ const DogsPage = () => {
     if (error) {
       router.push(`/login?${params.toString()}`);
     }
-  }, [error, router]);
+  }, [error, router, params]);
 
   if (error) {
     return (

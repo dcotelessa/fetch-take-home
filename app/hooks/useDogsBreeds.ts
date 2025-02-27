@@ -30,12 +30,12 @@ export const useDogBreeds = (): DogBreedsProps => {
 				} else {
 					throw new Error(`response status: ${response.status}`);
 				}
-			} catch (err: any) {
+			} catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 				setError(`BREEDS ERROR: ${err.message}`);
 			}
 		};
 		fetchBreeds();
-	}, []);
+	}, [fetchUrl]);
 
 	return { breeds: memoizedBreeds, error };
 }

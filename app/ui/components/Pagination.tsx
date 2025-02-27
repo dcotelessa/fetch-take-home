@@ -1,10 +1,10 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { MAX_PAGE_SIZE } from '@/app/hooks/useDogsParams';
+import { MAX_PAGE_SIZE, DogParams } from '@/app/hooks/useDogsParams';
 import './Pagination.css';
 
 interface PaginationProps {
-	searchResults: any;
+	searchResults: DogParams | null;
 	params: URLSearchParams;
 	totalPages: number | null;
 	currentPage: number | null;

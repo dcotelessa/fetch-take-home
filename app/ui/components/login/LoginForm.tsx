@@ -20,7 +20,7 @@ const LoginForm = () => {
 			return;
 		}
 		validateInputs();
-	}, [formData.name, formData.email]);
+	}, [formData.name, formData.email]); // eslint-disable-line react-hooks/exhaustive-deps 
 
 	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		setLoggingIn(true);
@@ -48,7 +48,7 @@ const LoginForm = () => {
 			}
 
 			router.push(`/?${params.toString()}`);
-		} catch (error: any) {
+		} catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 			setError(error.message);
 			setLoggingIn(false);
 		}

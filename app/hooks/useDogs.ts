@@ -45,14 +45,14 @@ const useDogs = (dogIds: string[]) => {
 				} else {
 					throw new Error(`response status: ${response.status}`);
 				}
-			} catch (err: any) {
-				setError(`DOGS ERROR: ${err.message}`);
+			} catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+				setError(`DOGS ERROR: ${err?.message}`);
 			} finally {
 				setLoading(false);
 			}
 		};
 		fetchDogs();
-	}, [dogIds]);
+	}, [dogIds, fetchUrl]);
 
 	return { dogs, loading, error };
 };

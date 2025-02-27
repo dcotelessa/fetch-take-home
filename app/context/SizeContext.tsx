@@ -14,7 +14,7 @@ interface SizeContextValue {
 
 const SizeContext = createContext<SizeContextValue>({
   size: DEFAULT_SIZE,
-  setSize: (_size: number) => {},
+  setSize: () => {},
   DEFAULT_SIZE,
 });
 

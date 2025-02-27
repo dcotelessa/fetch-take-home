@@ -65,7 +65,7 @@ const useFormData = () => {
 			} else {
 				setErrors(initialErrors);
 			}
-		} catch (error: any) {
+		} catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
 			// these are weird errors
 			console.error(error);
 		}

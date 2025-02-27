@@ -11,7 +11,7 @@ interface SelectedBreedsContextValue {
 
 const SelectedBreedsContext = createContext<SelectedBreedsContextValue>({
   selectedBreeds: [] as string[],
-  handleBreedChange: (_breed: string) => {},
+  handleBreedChange: () => {},
 });
 
 const SelectedBreedsProvider = ({ children }: { children: React.ReactNode }) => {

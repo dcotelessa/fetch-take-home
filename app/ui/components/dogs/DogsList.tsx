@@ -26,7 +26,7 @@ const DogsList = ({ dogIds }: { dogIds: string[] }) => {
 		if (error) {
 			router.push(`/login?${params.toString()}`);
 		}
-	}, [error, router]);
+	}, [error, router, params]);
 
 	if (error) {
 		return (
