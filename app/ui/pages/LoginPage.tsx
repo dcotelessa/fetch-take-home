@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import LoginForm from '../components/login/LoginForm';
 import DogIcon from '../components/icons/DogIcon';
 
@@ -20,7 +20,9 @@ const LoginPage = () => {
         <h1>Dog Match</h1>
         <DogIcon />
         <h3>Please login</h3>
-        <LoginForm />
+        <Suspense fallback={<div>Loading...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div >
   );
