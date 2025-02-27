@@ -115,3 +115,16 @@ Any data returned from the api calls will be stored within the contexts, especia
 UseContext over a library like Zustand was to keep library creep to a minimum. Zustand might provide simplier better management, but the contexts are decoupled here if we wanted to go that route later on.
 
 Using next.js was an easy way to deploy to Vercel, but it could be replaced with a custom server if we wanted to go that route, especially limiting the server component usage. That said, changes were needed to meet Vercel's strict standards to run, mostly liniting errors.
+
+I opted to stop work on Location Filters, though it is most likely that we would focus on city names, US States (in button arrangement like we did with Breeds), and a checkbox to consider using broswer's internal geolocation information to calculate bounding boxes for certain radii of locations. The resulting zipcodes could be displayed with their corresponding locations before using as a filter. In short, location is a big feature that while should be tackled, is beyond the scope of the minimum requirements.
+
+Most errors are simple server call errors or authentication expirations so most point back to he login page.
+
+I added some validation on the name and email, though completely unneccessary since we aren't storing. Still input should be validated.
+
+## 4. Future Improvements
+
+- Add Location Filters
+- Add more dog attributes
+- More test coverage (and working ones)
+- Throttling API calls for rate limiting
