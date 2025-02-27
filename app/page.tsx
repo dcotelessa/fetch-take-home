@@ -1,3 +1,5 @@
+'use client'
+
 import DogsPage from '@/app/ui/pages/DogsPage';
 import { FavoritesProvider } from '@/app/context/FavoritesContext';
 import { SelectedBreedsProvider } from '@/app/context/SelectedBreedsContext';
