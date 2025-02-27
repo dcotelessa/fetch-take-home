@@ -34,7 +34,7 @@ const BreedsSelection: React.FC = () => {
 				<span>{breed}</span>
 			</div>
 		));
-	}, [filteredBreeds, selectedBreeds]);
+	}, [filteredBreeds, selectedBreeds, handleBreedChange]);
 
 	if (error) {
 		return <div>Error: {error}</div>;
