@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoadingIcon from '../icons/LoadingIcon';
 import useDogs, { Dog } from '@/app/hooks/useDogs';
@@ -9,7 +9,7 @@ import BestMatchCard from './BestMatchCard';
 const DogsList = ({ dogIds }: { dogIds: string[] }) => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const params = new URLSearchParams(searchParams.toString());
+	const params = useMemo(() => new URLSearchParams(searchParams.toString()),[searchParams]);
 	const [loaded, setLoaded] = useState<boolean>(false);
 	const { starredDogsIds, toggleFavorite, totalStarredDogsIds } = useContext(FavoritesContext);
 

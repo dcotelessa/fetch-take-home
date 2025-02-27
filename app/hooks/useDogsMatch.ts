@@ -49,7 +49,7 @@ const useDogsMatch = () => {
 			}
 		};
 		fetchMatch();
-	}, [starredDogsIds, fetchUrl]);
+	}, [starredDogsIds, totalStarredDogsIds, fetchUrl]);
 
 	useEffect(() => {
 		if (match) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import LoadingIcon from '../components/icons/LoadingIcon';
 import useDogsParams, { convertURLSearchParamsToDogParams } from '@/app/hooks/useDogsParams';
@@ -11,7 +11,7 @@ import Pagination from '../components/Pagination';
 const DogsPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const params = new URLSearchParams(searchParams.toString());
+  const params = useMemo(() => new URLSearchParams(searchParams.toString()), [searchParams]);
 
   const [loaded, setLoaded] = useState(false);
 
