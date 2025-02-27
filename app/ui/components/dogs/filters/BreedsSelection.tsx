@@ -12,10 +12,6 @@ const BreedsSelection: React.FC = () => {
 		setFilterText(event.target.value);
 	};
 
-	if (error) {
-		return <div>Error: {error}</div>;
-	}
-
 	const filteredBreeds = useMemo(() => {
 		return breeds.filter((breed) => breed.toLowerCase().includes(filterText.toLowerCase()));
 	}, [breeds, filterText]);
@@ -39,6 +35,10 @@ const BreedsSelection: React.FC = () => {
 			</div>
 		));
 	}, [filteredBreeds, selectedBreeds]);
+
+	if (error) {
+		return <div>Error: {error}</div>;
+	}
 
 	return (
 		<div className="breeds">
