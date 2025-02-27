@@ -11,7 +11,7 @@
 .filters-dropdown {
   position: fixed;
   top: 100vh;
-  left: 1;
+  left: 1vw;
   background-color: #323;
   border: 1px solid #ddd;
   padding: 10px;
