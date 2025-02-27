@@ -16,9 +16,14 @@ const FavoritesContext = createContext<FavoritesContextValue>({
 });
 
 const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
-  const [starredDogsIds, setStarredDogsIds] = useState(
-    JSON.parse(localStorage.getItem('starredDogs') || '[]')
-  );
+  const [starredDogsIds, setStarredDogsIds] = useState([] as string[]);
+
+useEffect(() => {
+    const storedStarredDogsIds = localStorage.getItem('starredDogs');
+    if (storedStarredDogsIds) {
+      setStarredDogsIds(JSON.parse(storedStarredDogsIds));
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('starredDogs', JSON.stringify(starredDogsIds));
