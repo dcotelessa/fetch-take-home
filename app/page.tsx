@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import DogsPage from '@/app/ui/pages/DogsPage';
 import { FavoritesProvider } from '@/app/context/FavoritesContext';
 import { SelectedBreedsProvider } from '@/app/context/SelectedBreedsContext';
@@ -12,7 +13,9 @@ export default function Page() {
         <AgeRangeProvider>
           <SizeProvider>
             <SortDogsProvider>
-              <DogsPage />
+              <Suspense fallback={<div>Loading...</div>}>
+                <DogsPage />
+              </Suspense>
             </SortDogsProvider>
           </SizeProvider>
         </AgeRangeProvider>
