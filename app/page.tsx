@@ -8,18 +8,18 @@ import { SortDogsProvider } from '@/app/context/SortDogsContext';
 
 export default function Page() {
   return (
-    <FavoritesProvider>
-      <SelectedBreedsProvider>
-        <AgeRangeProvider>
-          <SizeProvider>
-            <SortDogsProvider>
-              <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
+      <FavoritesProvider>
+        <SelectedBreedsProvider>
+          <AgeRangeProvider>
+            <SizeProvider>
+              <SortDogsProvider>
                 <DogsPage />
-              </Suspense>
-            </SortDogsProvider>
-          </SizeProvider>
-        </AgeRangeProvider>
-      </SelectedBreedsProvider>
-    </FavoritesProvider>
+              </SortDogsProvider>
+            </SizeProvider>
+          </AgeRangeProvider>
+        </SelectedBreedsProvider>
+      </FavoritesProvider>
+    </Suspense>
   );
 }
