@@ -10,14 +10,15 @@
 
 .filters-dropdown {
   position: fixed;
-  top: 100vh;
-  left: 1vw;
+  top: 1000vh;
+  left: 0.5vw;
   background-color: #323;
   border: 1px solid #ddd;
   padding: 10px;
   display: flex;
   gap:20px;
   width: 98vw;
+  width: 98dvw;
   z-index: 1; 
 }
 
