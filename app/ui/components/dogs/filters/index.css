@@ -10,7 +10,7 @@
 
 .filters-dropdown {
   position: fixed;
-  top: 1000vh;
+  top: 10vh;
   left: 0.5vw;
   background-color: #323;
   border: 1px solid #ddd;
