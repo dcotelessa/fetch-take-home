@@ -34,8 +34,10 @@
   border: 1px solid #ddd;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin: 20px;
+  margin: 10px;
   background: #000;
+  width: calc(100% - 20px);
+  max-width: 300px;
 }
 
 .dog-name {
@@ -116,4 +118,38 @@
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .dog-card {
+    margin: 8px;
+    width: calc(100% - 16px);
+  }
+  
+  .dog-name {
+    font-size: 20px;
+  }
+  
+  .dog-image-container {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .dog-info {
+    font-size: 16px;
+  }
+  
+  .modal-content {
+    max-width: 90%;
+  }
+}
 
+@media (max-width: 480px) {
+  .dog-card {
+    margin: 5px;
+    width: calc(100% - 10px);
+  }
+  
+  .dog-image-container {
+    width: 150px;
+    height: 150px;
+  }
+}
