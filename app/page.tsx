@@ -5,6 +5,7 @@ import { SelectedBreedsProvider } from '@/app/context/SelectedBreedsContext';
 import { AgeRangeProvider } from '@/app/context/AgeRangeContext';
 import { SizeProvider } from '@/app/context/SizeContext';
 import { SortDogsProvider } from '@/app/context/SortDogsContext';
+import { LocationProvider } from '@/app/context/LocationContext';
 
 export default function Page() {
   return (
@@ -14,7 +15,9 @@ export default function Page() {
           <AgeRangeProvider>
             <SizeProvider>
               <SortDogsProvider>
+                <LocationProvider>
                 <DogsPage />
+                </LocationProvider>
               </SortDogsProvider>
             </SizeProvider>
           </AgeRangeProvider>
