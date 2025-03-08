@@ -5,7 +5,7 @@ interface DogBreedsProps {
 	error: string | null;
 }
 
-export const useDogBreeds = (): DogBreedsProps => {
+export const useDogsBreeds = (): DogBreedsProps => {
 	const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || ''
 	const [breeds, setBreeds] = useState<string[]>([]);
 	const [error, setError] = useState<string | null>(null);
@@ -40,4 +40,4 @@ export const useDogBreeds = (): DogBreedsProps => {
 	return { breeds: memoizedBreeds, error };
 }
 
-export default useDogBreeds;
+export default useDogsBreeds;

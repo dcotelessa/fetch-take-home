@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { createContext, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { FiltersContext } from './FiltersContext';
 
 interface SelectedBreedsContextValue {
   selectedBreeds: string[];
@@ -15,10 +15,14 @@ const SelectedBreedsContext = createContext<SelectedBreedsContextValue>({
 });
 
 const SelectedBreedsProvider = ({ children }: { children: React.ReactNode }) => {
-  const searchParams = useSearchParams();
-  const breedsParam = searchParams.getAll('breeds');
+  const { params } = useContext(FiltersContext);
+  const { breeds } = params;
 
-  const [selectedBreeds, setSelectedBreeds] = useState<string[]>(breedsParam || []);
+  const [selectedBreeds, setSelectedBreeds] = useState<string[]>(breeds);
+
+  useEffect(() => {
+    setSelectedBreeds(breeds);
+  }, [breeds]);
 
   const handleBreedChange = (breed: string) => {
           const newBreeds = [...selectedBreeds];

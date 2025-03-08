@@ -1,20 +1,20 @@
 import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useDogsParams from '@/app/hooks/useDogsParams';
 import useDogs, { Dog } from '@/app/hooks/useDogs';
 import { FavoritesContext } from '@/app/context/FavoritesContext';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import LoadingIcon from '../icons/LoadingIcon';
 import DogsCard from './DogsCard';
 import BestMatchCard from './BestMatchCard';
 
 const DogsList = () => {
 	const router = useRouter();
-	const { params, searchResults } = useDogsParams();
-	const { resultIds } = searchResults || { resultIds: [] };
+	const { searchResults, loading: filtersLoading, error: filtersError } = useContext(FiltersContext);
+	const { resultIds = [] } = searchResults || {};
 	const [loaded, setLoaded] = useState<boolean>(false);
 	const { starredDogsIds, toggleFavorite, totalStarredDogsIds } = useContext(FavoritesContext);
 
-	const { dogs, loading, error } = useDogs(resultIds);
+	const { dogs, loading: dogsLoading, error: dogsError } = useDogs(resultIds);
 
 	// Loaded state happens when the page mounts, not when the component mounts
 	// allowing for css animations to activate
@@ -24,12 +24,12 @@ const DogsList = () => {
 
 	// most errors are unauthorized, so redirect to login
 	useEffect(() => {
-		if (error) {
-			router.push(`/login?${params.toString()}`);
+		if (dogsError || filtersError) {
+			router.push(`/login`);
 		}
-	}, [error, router, params]);
+	}, [dogsError, router]);
 
-	if (error) {
+	if (dogsError) {
 		return (
 			<div className="loading page-root">
 				<div className={`container ${loaded ? 'loaded' : ''}`}>
@@ -39,7 +39,7 @@ const DogsList = () => {
 		)
 	}
 
-	if (loading) {
+	if (dogsLoading || filtersLoading) {
 		return (
 			<div className="loading modal">
 				<div className={`container ${loaded ? 'loaded' : ''}`}>
@@ -50,7 +50,7 @@ const DogsList = () => {
 		);
 	}
 
-	if (!dogs && totalStarredDogsIds === 0) {
+	if (!dogs?.length && totalStarredDogsIds === 0) {
 		return <div>No dogs found</div>;
 	}
 

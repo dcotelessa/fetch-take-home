@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { createContext, useCallback, useState } from 'react';
+import { createContext, useCallback, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const MAX_AGE: number = 20;
@@ -51,19 +51,23 @@ interface FiltersContextValue {
   MAX_AGE: number;
   DEFAULT_SIZE: number,
   DEFAULT_SORT: string,
+  totalPages: number | null;
+  currentPage: number | null;
+  size: number;
+  hasSearchResults: boolean;  
 }
 
-  const initParams: DogParams = {
-    breeds: [],
-    zipCodes: [],
-    ageMin: 0,
-    ageMinEnabled: true,
-    ageMax: MAX_AGE,
-    ageMaxEnabled: true,
-    size: DEFAULT_SIZE,
-    from: 0,
-    sort: DEFAULT_SORT
-  };
+const initParams: DogParams = {
+  breeds: [],
+  zipCodes: [],
+  ageMin: 0,
+  ageMinEnabled: true,
+  ageMax: MAX_AGE,
+  ageMaxEnabled: true,
+  size: DEFAULT_SIZE,
+  from: 0,
+  sort: DEFAULT_SORT
+};
 
 const FiltersContext = createContext<FiltersContextValue>({
   handleParamsChange: () => { },
@@ -76,7 +80,11 @@ const FiltersContext = createContext<FiltersContextValue>({
   updateSearchParams: () => { },
   MAX_AGE,
   DEFAULT_SIZE,
-  DEFAULT_SORT
+  DEFAULT_SORT,
+  totalPages: null,
+  currentPage: null,
+  size: DEFAULT_SIZE,
+  hasSearchResults: false
 });
 
 const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
@@ -110,6 +118,23 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   const [params, setParams] = useState<DogParams>(initParams);
   const [searchResults, setSearchResults] = useState<DogSearchParams | null>(null);
 
+  // Calculate derived state
+  const size = params.size || DEFAULT_SIZE;
+  const totalPages = useMemo(() => {
+    if (!searchResults) return null;
+    return Math.ceil(searchResults.total / size);
+  }, [searchResults, size]);
+
+  const from = params.from || 0;
+  const currentPage = useMemo(() => {
+    if (!searchResults) return null;
+    return Math.floor(from / size) + 1;
+  }, [from, size, searchResults]);
+
+  const hasSearchResults = useMemo(() => {
+    if (!searchResults) return false;
+    return searchResults.resultIds.length > 0 || false;
+  }, [searchResults]);
   const validateParams = (newParams: DogUpdateParams) => {
     // TODO: Needs more validation
     if (newParams.ageMin && newParams.ageMin > MAX_AGE) {
@@ -197,7 +222,11 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
       updateSearchParams,
       MAX_AGE,
       DEFAULT_SIZE,
-      DEFAULT_SORT
+      DEFAULT_SORT,
+      totalPages,
+      currentPage,
+      size,
+      hasSearchResults
     }}>
       {children}
     </FiltersContext.Provider>

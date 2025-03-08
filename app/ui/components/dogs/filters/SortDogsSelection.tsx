@@ -7,6 +7,8 @@ const SortDogsSelection = () => {
 		params,
 		handleParamsChange,
 	} = useContext(FiltersContext);
+	
+	const sort = params.sort || 'breed:asc';
 	const [currentField, currentDirection] = sort.split(':');
 
 	const handleSortChange = (field: string) => {

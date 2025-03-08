@@ -1,24 +1,24 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import useDogsParams from '@/app/hooks/useDogsParams';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import './Pagination.css';
 
 const Pagination: React.FC = () => {
 	const router = useRouter();
-	const { params, searchResults, totalPages, currentPage, size } = useDogsParams();
+	const { params, searchResults, totalPages, currentPage, size } = useContext(FiltersContext);
 
-	if (totalPages === null || currentPage === null) {
+	if (!searchResults || totalPages === null || currentPage === null || totalPages <= 1) {
 		return null;
 	}
 
 	const handlePageChange = (page: number) => {
 		const from = (page - 1) * size;
-		const searchParams = new URLSearchParams(params.toString());
-		searchParams.delete('size');
-		searchParams.delete('from');
-		searchParams.set('size', size.toString());
-		searchParams.set('from', from.toString());
-		router.push(`?${searchParams.toString()}`);
+		const newParams = new URLSearchParams(params.toString());
+		newParams.delete('size');
+		newParams.delete('from');
+		newParams.set('size', size.toString());
+		newParams.set('from', from.toString());
+		router.push(`?${newParams.toString()}`);
 	};
 
 	const buttons = Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -28,18 +28,17 @@ const Pagination: React.FC = () => {
 	));
 
 	// Filter the buttons to only show range around current page
-	const filteredPrevButtons = buttons.slice(Math.max(currentPage - 6, 0), Math.max(currentPage - 2,0));
+	const filteredPrevButtons = buttons.slice(Math.max(currentPage - 6, 0), Math.max(currentPage - 1, 0));
 
-	const filteredNextButtons = buttons.slice(currentPage + 1, currentPage + 5);
+	const filteredNextButtons = buttons.slice(currentPage, currentPage + 4);
 
 	// with filters searchResults prev and next are not reliable
-	const from = parseInt(params.get('from') || '0', 10);
-	const next = from + size;
+	const next = params.from + size;
 	const hasNext = next < searchResults.total;
-	const hasPrev = from >= size;
+	const hasPrev = params.from >= size;
 
 	const hasFirst = currentPage > 6;
-	const hasLast = currentPage + 5 < totalPages;
+	const hasLast = currentPage + 4 < totalPages;
 
 	return (
 		<div className="pagination">
