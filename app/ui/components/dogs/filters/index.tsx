@@ -1,10 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { SelectedBreedsContext } from '@/app/context/SelectedBreedsContext';
-import { AgeRangeContext } from '@/app/context/AgeRangeContext';
-import { SortDogsContext } from '@/app/context/SortDogsContext';
-import { SizeContext } from '@/app/context/SizeContext';
-import { LocationContext } from '@/app/context/LocationContext';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import SliderHorizontal3 from '../../icons/SliderHorizontal3';
 import BreedsSelection from './BreedsSelection';
 import AgeRangeSelection from './AgeRangeSelection';
@@ -16,45 +11,14 @@ import './index.css';
 
 const Filters = () => {
 	const [showDropdown, setShowDropdown] = useState(false);
-	const router = useRouter();
-	const searchParams = useSearchParams();
-	const { selectedBreeds } = useContext(SelectedBreedsContext);
-	const { ageMin, ageMax, MAX_AGE } = useContext(AgeRangeContext);
-	const { sort } = useContext(SortDogsContext);
-	const { size, DEFAULT_SIZE } = useContext(SizeContext);
-	const { zipCodes } = useContext(LocationContext);
+	const { updateSearchParams } = useContext(FiltersContext);
 
 	const handleToggle = () => {
 		setShowDropdown(!showDropdown);
 	};
 
 	const handleApply = () => {
-		const params = new URLSearchParams(searchParams.toString());
-		params.delete('breeds');
-		selectedBreeds.forEach((breed) => {
-			params.append('breeds', breed);
-		});
-		params.delete('zipCodes');
-		zipCodes.forEach((zip) => {
-			params.append('zipCodes', zip);
-		});
-		params.delete('ageMin');
-		if (ageMin > 0) {
-			params.append('ageMin', ageMin.toString());
-		}
-		params.delete('ageMax');
-		if (ageMax < MAX_AGE) {
-			params.append('ageMax', ageMax.toString());
-		}
-
-		params.delete('size');
-		if (size != DEFAULT_SIZE) {
-			params.append('size', size.toString());
-		}
-
-		params.delete('sort');
-		params.append('sort', sort);
-		router.push(`/?${params.toString()}`);
+		updateSearchParams();
 	};
 
 	const dropdown = useMemo(() => {

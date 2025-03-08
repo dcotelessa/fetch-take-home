@@ -55,51 +55,18 @@ const LocationContext = createContext<LocationContextValue>({
 
 const LocationProvider = ({ children }: { children: React.ReactNode }) => {
   const searchParams = useSearchParams();
+  
+  // Extract zipCodes from URL search params
   const zipCodesParam = searchParams.getAll('zipCodes');
 
+  // Initialize state with values from URL params
   const [zipCodes, setZipCodes] = useState<string[]>(zipCodesParam || []);
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationSearchParams, setLocationSearchParams] = useState<LocationSearchParams>({});
   const [geoLocationOptions, setGeoLocationOptions] = useState<GeoLocationOptions>({ radius: 25 });
   const [useGeoLocation, setUseGeoLocation] = useState(false);
-  const [geoBoundingBox, setGeoBoundingBox] = useState<{
-    top_left?: Coordinates;
-    bottom_right?: Coordinates;
-  }>({});
 
-  // Effect to update geolocation bounding box when activated
-  useEffect(() => {
-    if (useGeoLocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-
-        // Calculate the coordinates of the bounding box
-        const radius = geoLocationOptions.radius; // miles
-        const latRadius = radius / 69; // miles to degrees
-        const lonRadius = radius / 54.6; // miles to degrees
-
-        const newGeoBoundingBox = {
-          top_left: {
-            lat: lat + latRadius,
-            lon: lon - lonRadius
-          },
-          bottom_right: {
-            lat: lat - latRadius,
-            lon: lon + lonRadius
-          }
-        };
-
-        setGeoBoundingBox(newGeoBoundingBox);
-        
-        setLocationSearchParams(prev => ({
-          ...prev,
-          geoBoundingBox: newGeoBoundingBox
-        }));
-      });
-    }
-  }, [useGeoLocation, geoLocationOptions.radius]);
-
+  // This will toggle a zipCode (add if not present, remove if present)
   const handleZipCodeChange = (zipCode: string) => {
     if (zipCodes.includes(zipCode)) {
       setZipCodes(zipCodes.filter((code) => code !== zipCode));
@@ -108,10 +75,12 @@ const LocationProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const handleUseGeoLocationChange = (useGeoLocation: boolean) => {
-    setUseGeoLocation(useGeoLocation);
+  // Controls the geo location toggle
+  const handleUseGeoLocationChange = (geoLocationEnabled: boolean) => {
+    setUseGeoLocation(geoLocationEnabled);
   };
 
+  // Updates the search parameters used for querying
   const handleSearchParamsChange = (params: LocationSearchParams) => {
     setLocationSearchParams({
       ...locationSearchParams,
@@ -119,9 +88,18 @@ const LocationProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
+  // Updates geolocation options (radius)
   const handleGeoLocationOptionsChange = (options: GeoLocationOptions) => {
     setGeoLocationOptions(options);
   };
+
+  // When the component mounts, load zipCodes from URL
+  useEffect(() => {
+    const zipCodesFromUrl = searchParams.getAll('zipCodes');
+    if (zipCodesFromUrl.length > 0) {
+      setZipCodes(zipCodesFromUrl);
+    }
+  }, [searchParams]);
 
   return (
     <LocationContext.Provider value={{

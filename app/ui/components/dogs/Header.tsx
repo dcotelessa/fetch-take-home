@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useContext, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { FavoritesContext } from '@/app/context/FavoritesContext';
+import useDogsParams from '@/app/hooks/useDogsParams';
 import DogSearchFilters from './filters';
 import LoadingIcon from '../icons/LoadingIcon';
 import DogIcon from '../icons/DogIcon';
 import './Header.css';
 
-const Header = ({ total, totalPages, currentPage }: { total: number, totalPages: number | null, currentPage: number | null }) => {
+const Header = () => {
+	const { params, searchResults, totalPages, currentPage } = useDogsParams();
+	const { total } = searchResults || { total: 0 };
 	const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || ''
 	const router = useRouter();
-	const searchParams = useSearchParams();
-	const params = new URLSearchParams(searchParams.toString());
 	const { totalStarredDogsIds } = useContext(FavoritesContext);
 	const [loggingOut, setLoggingOut] = useState(false);
 

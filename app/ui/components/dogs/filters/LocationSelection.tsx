@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useCallback } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { LocationContext } from '@/app/context/LocationContext';
 import './LocationSelection.css';
 
@@ -11,10 +11,27 @@ const US_STATES = [
 ];
 
 interface LocationSelectionProps {
-  // Optional props to make the component more flexible
   initialTab?: 'zipCode' | 'cityState' | 'geoLocation';
   className?: string;
 }
+
+// This is a mock function that would be replaced with a real API call
+// to get zip codes based on city and state
+const fetchZipCodesByCityState = async (city: string, states: string[]): Promise<string[]> => {
+  // This would be a real API call in your implementation
+  console.log('Fetching zip codes for', city, states);
+  // Mock response - in reality, this would come from your backend
+  return ['12345', '67890'];
+};
+
+// This is a mock function that would be replaced with a real API call
+// to get zip codes based on geolocation
+const fetchZipCodesByGeoLocation = async (lat: number, lon: number, radius: number): Promise<string[]> => {
+  // This would be a real API call in your implementation
+  console.log('Fetching zip codes for coordinates', lat, lon, 'within', radius, 'miles');
+  // Mock response - in reality, this would come from your backend
+  return ['54321', '09876'];
+};
 
 const LocationSelection: React.FC<LocationSelectionProps> = ({ 
   initialTab = 'zipCode',
@@ -24,76 +41,51 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
   
   const { 
     zipCodes, 
-    searchParams, 
+    handleZipCodeChange,
     geoLocationOptions,
     useGeoLocation,
-    handleZipCodeChange,
     handleUseGeoLocationChange,
     handleSearchParamsChange, 
     handleGeoLocationOptionsChange 
   } = useContext(LocationContext);
 
   const [zipCodeInput, setZipCodeInput] = useState<string>('');
-  const [city, setCity] = useState<string>(searchParams.city || '');
-  const [selectedStates, setSelectedStates] = useState<string[]>(searchParams.states || []);
+  const [city, setCity] = useState<string>('');
+  const [selectedStates, setSelectedStates] = useState<string[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
+  // Handle tab selection
   const handleTabChange = (tab: 'zipCode' | 'cityState' | 'geoLocation') => {
     setActiveTab(tab);
   };
 
+  // Handle direct zip code input
   const handleZipCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (zipCodeInput.trim()) {
       const newZipCode = zipCodeInput.trim();
-      // Use the handleZipCodeChange directly from context if available
-      // Otherwise implement locally
       if (typeof handleZipCodeChange === 'function') {
         handleZipCodeChange(newZipCode);
-      } else {
-        // Fallback implementation if context function is unavailable
-        const updatedZipCodes = [...zipCodes];
-        if (!updatedZipCodes.includes(newZipCode)) {
-          updatedZipCodes.push(newZipCode);
-          // If we have a search params handler, update through that
-          if (typeof handleSearchParamsChange === 'function') {
-            handleSearchParamsChange({
-              ...searchParams,
-              zipCodes: updatedZipCodes
-            });
-          }
-        }
       }
       setZipCodeInput('');
     }
   };
 
+  // Handle zip code removal
   const handleRemoveZipCode = useCallback((zipCode: string) => {
-    // Use the handleZipCodeChange directly from context if available
-    // Otherwise implement locally
     if (typeof handleZipCodeChange === 'function') {
-      handleZipCodeChange(zipCode); // Context will handle the toggle
-    } else {
-      // Fallback implementation if context function is unavailable
-      const updatedZipCodes = zipCodes.filter(code => code !== zipCode);
-      // If we have a search params handler, update through that
-      if (typeof handleSearchParamsChange === 'function') {
-        handleSearchParamsChange({
-          ...searchParams,
-          zipCodes: updatedZipCodes
-        });
-      }
+      handleZipCodeChange(zipCode);
     }
-  }, [zipCodes, handleZipCodeChange, handleSearchParamsChange, searchParams]);
+  }, [handleZipCodeChange]);
 
+  // Handle city input change
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCity = e.target.value;
     setCity(newCity);
-    handleSearchParamsChange({
-      ...searchParams,
-      city: newCity
-    });
   };
 
+  // Handle state selection
   const handleStateToggle = (state: string) => {
     let newStates: string[];
     
@@ -104,12 +96,45 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
     }
     
     setSelectedStates(newStates);
-    handleSearchParamsChange({
-      ...searchParams,
-      states: newStates
-    });
   };
 
+  // Handle searching for zip codes based on city and state
+  const handleCityStateSearch = async () => {
+    if (!city || selectedStates.length === 0) {
+      setSearchError('Please enter a city and select at least one state');
+      return;
+    }
+    
+    setIsSearching(true);
+    setSearchError(null);
+    
+    try {
+      // This would be replaced with your real API call
+      const newZipCodes = await fetchZipCodesByCityState(city, selectedStates);
+      
+      // Add the returned zip codes to our selected zip codes
+      newZipCodes.forEach(zipCode => {
+        if (!zipCodes.includes(zipCode)) {
+          handleZipCodeChange(zipCode);
+        }
+      });
+      
+      // Switch to zip code tab to show results
+      setActiveTab('zipCode');
+      
+      // Clear the city and state selections
+      setCity('');
+      setSelectedStates([]);
+      
+    } catch (error) {
+      console.error('Error fetching zip codes:', error);
+      setSearchError('Error fetching zip codes. Please try again.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Handle geolocation toggle
   const handleGeolocationToggle = useCallback(() => {
     if (typeof handleUseGeoLocationChange === 'function') {
       handleUseGeoLocationChange(!useGeoLocation);
@@ -118,116 +143,108 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
     if (!useGeoLocation) {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            // Success - will be handled by context
-            // But we can also update parameters directly here as a fallback
+          async (position) => {
             const { latitude, longitude } = position.coords;
             const radius = geoLocationOptions?.radius || 25;
             
-            // Calculate bounding box
-            const latRadius = radius / 69; // miles to degrees lat
-            const lonRadius = radius / (Math.cos(latitude * Math.PI / 180) * 69); // miles to degrees lon, adjusted for latitude
+            // Update the context
+            handleUseGeoLocationChange(true);
             
-            const geoBoundingBox = {
-              top_left: {
-                lat: latitude + latRadius,
-                lon: longitude - lonRadius
-              },
-              bottom_right: {
-                lat: latitude - latRadius,
-                lon: longitude + lonRadius
-              }
-            };
-            
-            // Update search params if the context didn't already handle this
-            if (typeof handleSearchParamsChange === 'function') {
-              handleSearchParamsChange({
-                ...searchParams,
-                geoBoundingBox
+            // Fetch zip codes for this location
+            setIsSearching(true);
+            try {
+              const newZipCodes = await fetchZipCodesByGeoLocation(latitude, longitude, radius);
+              
+              // Add the returned zip codes
+              newZipCodes.forEach(zipCode => {
+                if (!zipCodes.includes(zipCode)) {
+                  handleZipCodeChange(zipCode);
+                }
               });
+              
+              // Switch to zip code tab to show results
+              setActiveTab('zipCode');
+            } catch (error) {
+              console.error('Error fetching zip codes by location:', error);
+              setSearchError('Error fetching zip codes for your location. Please try again.');
+            } finally {
+              setIsSearching(false);
             }
           },
           (error) => {
-            // Handle errors
             console.error('Geolocation error:', error.message);
-            // Provide user feedback about the error
             switch (error.code) {
               case error.PERMISSION_DENIED:
-                alert('Please allow location access to use this feature.');
+                setSearchError('Please allow location access to use this feature.');
                 break;
               case error.POSITION_UNAVAILABLE:
-                alert('Location information is unavailable.');
+                setSearchError('Location information is unavailable.');
                 break;
               case error.TIMEOUT:
-                alert('The request to get user location timed out.');
+                setSearchError('The request to get user location timed out.');
                 break;
               default:
-                alert('An unknown error occurred when trying to access your location.');
+                setSearchError('An unknown error occurred when trying to access your location.');
                 break;
             }
-            // Revert the toggle since we couldn't get location
-            if (typeof handleUseGeoLocationChange === 'function') {
-              handleUseGeoLocationChange(false);
-            }
+            handleUseGeoLocationChange(false);
           }
         );
       } else {
-        // Geolocation not supported by browser
-        alert('Geolocation is not supported by your browser.');
-        // Revert the toggle
-        if (typeof handleUseGeoLocationChange === 'function') {
-          handleUseGeoLocationChange(false);
-        }
+        setSearchError('Geolocation is not supported by your browser.');
+        handleUseGeoLocationChange(false);
       }
     }
-  }, [useGeoLocation, handleUseGeoLocationChange, handleSearchParamsChange, searchParams, geoLocationOptions]);
+  }, [useGeoLocation, zipCodes, handleUseGeoLocationChange, handleZipCodeChange, geoLocationOptions]);
 
-  const handleRadiusChange = (radius: number) => {
+  // Handle radius change and update search
+  const handleRadiusChange = async (radius: number) => {
+    // Update the radius in context
     handleGeoLocationOptionsChange({ 
       ...geoLocationOptions,
       radius 
     });
-  };
-
-  useEffect(() => {
-    // This could be expanded to load from URL params or localStorage
-    // For now, we're just setting up the infrastructure
-    const loadSavedData = () => {
-      try {
-        // Example: Load from localStorage if available
-        const savedLocationData = localStorage.getItem('locationFilterData');
-        if (savedLocationData) {
-          const parsedData = JSON.parse(savedLocationData);
-          
-          // Set city if available
-          if (parsedData.city && typeof parsedData.city === 'string') {
-            setCity(parsedData.city);
-            if (typeof handleSearchParamsChange === 'function') {
-              handleSearchParamsChange({
-                ...searchParams,
-                city: parsedData.city
-              });
-            }
-          }
-          
-          // Set states if available
-          if (Array.isArray(parsedData.states)) {
-            setSelectedStates(parsedData.states);
-            if (typeof handleSearchParamsChange === 'function') {
-              handleSearchParamsChange({
-                ...searchParams,
-                states: parsedData.states
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error loading saved location data:', error);
-      }
-    };
     
-    loadSavedData();
-  }, []);
+    // If geolocation is active, re-fetch zip codes with the new radius
+    if (useGeoLocation && 'geolocation' in navigator) {
+      setIsSearching(true);
+      setSearchError(null);
+      
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          try {
+            const newZipCodes = await fetchZipCodesByGeoLocation(latitude, longitude, radius);
+            
+            // Clear existing geolocation-based zip codes
+            // This is a simplification - in a real app you'd track which zip codes came from geo
+            // and only remove those before adding the new ones
+            
+            // Add the new zip codes
+            newZipCodes.forEach(zipCode => {
+              if (!zipCodes.includes(zipCode)) {
+                handleZipCodeChange(zipCode);
+              }
+            });
+            
+            // Switch to zip code tab to show results
+            setActiveTab('zipCode');
+          } catch (error) {
+            console.error('Error updating zip codes by location:', error);
+            setSearchError('Error updating zip codes for your location. Please try again.');
+          } finally {
+            setIsSearching(false);
+          }
+        },
+        (error) => {
+          console.error('Geolocation error during radius update:', error);
+          setIsSearching(false);
+          setSearchError('Could not access your location to update the search radius.');
+        }
+      );
+    }
+  };
   
   return (
     <div className={`location-filter ${className}`}>
@@ -254,6 +271,20 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
           Geo Location
         </button>
       </div>
+      
+      {/* Error Message Display */}
+      {searchError && (
+        <div className="search-error">
+          {searchError}
+          <button 
+            className="close-error" 
+            onClick={() => setSearchError(null)}
+            aria-label="Dismiss error"
+          >
+            ×
+          </button>
+        </div>
+      )}
       
       {/* Tab Content */}
       <div className="tab-content">
@@ -329,6 +360,16 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
                 ))}
               </div>
             </div>
+            
+            <div className="search-actions">
+              <button 
+                className="search-button" 
+                onClick={handleCityStateSearch}
+                disabled={isSearching || !city || selectedStates.length === 0}
+              >
+                {isSearching ? 'Searching...' : 'Find Zip Codes'}
+              </button>
+            </div>
           </div>
         )}
         
@@ -352,24 +393,28 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
                   <button 
                     className={`filter-button ${geoLocationOptions.radius === 5 ? 'active' : ''}`}
                     onClick={() => handleRadiusChange(5)}
+                    disabled={isSearching}
                   >
                     5 miles
                   </button>
                   <button 
                     className={`filter-button ${geoLocationOptions.radius === 10 ? 'active' : ''}`}
                     onClick={() => handleRadiusChange(10)}
+                    disabled={isSearching}
                   >
                     10 miles
                   </button>
                   <button 
                     className={`filter-button ${geoLocationOptions.radius === 25 ? 'active' : ''}`}
                     onClick={() => handleRadiusChange(25)}
+                    disabled={isSearching}
                   >
                     25 miles
                   </button>
                   <button 
                     className={`filter-button ${geoLocationOptions.radius === 50 ? 'active' : ''}`}
                     onClick={() => handleRadiusChange(50)}
+                    disabled={isSearching}
                   >
                     50 miles
                   </button>

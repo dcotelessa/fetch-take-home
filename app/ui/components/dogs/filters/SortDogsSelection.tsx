@@ -1,22 +1,21 @@
 import React, { useCallback, useContext } from 'react';
-import { SortDogsContext } from '@/app/context/SortDogsContext';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import './SortDogsSelection.css';
 
 const SortDogsSelection = () => {
-	const { sort, setSort } = useContext(SortDogsContext);
+	const {
+		params,
+		handleParamsChange,
+	} = useContext(FiltersContext);
 	const [currentField, currentDirection] = sort.split(':');
 
 	const handleSortChange = (field: string) => {
 		if (field === currentField) {
 			const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-			setSort(`${field}:${newDirection}`);
-
+			handleParamsChange({ sort: `${field}:${newDirection}` });
 		} else {
-			setSort(`${field}:asc`);
+			handleParamsChange({ sort: `${field}:asc` });
 		}
-
-
-
 	};
 
 	const determineClass = useCallback((field: string) => {

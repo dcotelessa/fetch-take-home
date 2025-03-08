@@ -1,19 +1,20 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import LoadingIcon from '../icons/LoadingIcon';
+import { useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import useDogsParams from '@/app/hooks/useDogsParams';
 import useDogs, { Dog } from '@/app/hooks/useDogs';
 import { FavoritesContext } from '@/app/context/FavoritesContext';
+import LoadingIcon from '../icons/LoadingIcon';
 import DogsCard from './DogsCard';
 import BestMatchCard from './BestMatchCard';
 
-const DogsList = ({ dogIds }: { dogIds: string[] }) => {
+const DogsList = () => {
 	const router = useRouter();
-	const searchParams = useSearchParams();
-	const params = useMemo(() => new URLSearchParams(searchParams.toString()),[searchParams]);
+	const { params, searchResults } = useDogsParams();
+	const { resultIds } = searchResults || { resultIds: [] };
 	const [loaded, setLoaded] = useState<boolean>(false);
 	const { starredDogsIds, toggleFavorite, totalStarredDogsIds } = useContext(FavoritesContext);
 
-	const { dogs, loading, error } = useDogs(dogIds);
+	const { dogs, loading, error } = useDogs(resultIds);
 
 	// Loaded state happens when the page mounts, not when the component mounts
 	// allowing for css animations to activate

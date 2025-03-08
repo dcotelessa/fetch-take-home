@@ -1,22 +1,18 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import LoadingIcon from '../components/icons/LoadingIcon';
-import useDogsParams, { convertURLSearchParamsToDogParams } from '@/app/hooks/useDogsParams';
+import useDogsParams from '@/app/hooks/useDogsParams';
 import DogsList from '../components/dogs/DogsList';
 import Header from '../components/dogs/Header';
 import Pagination from '../components/Pagination';
 
 const DogsPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const params = useMemo(() => new URLSearchParams(searchParams.toString()), [searchParams]);
-
   const [loaded, setLoaded] = useState(false);
 
-  const initialParams = convertURLSearchParamsToDogParams(params);
-  const { searchResults, loading, error, totalPages, currentPage } = useDogsParams(initialParams);
+  const { params, hasSearchResults, loading, error } = useDogsParams();
 
   useEffect(() => {
     setLoaded(true);
@@ -52,22 +48,11 @@ const DogsPage = () => {
 
   return (
     <div className="dogs page-root">
-      {searchResults && (
+      {hasSearchResults && (
         <>
-          <Header
-            total={searchResults.total}
-            totalPages={totalPages}
-            currentPage={currentPage}
-          />
-          <DogsList
-            dogIds={searchResults.resultIds}
-          />
-          <Pagination
-            searchResults={searchResults}
-            params={params}
-            totalPages={totalPages}
-            currentPage={currentPage}
-          />
+          <Header />
+          <DogsList />
+          <Pagination />
         </>
       )}
     </div>

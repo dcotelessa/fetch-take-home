@@ -17,7 +17,7 @@ export interface Coordinates {
 const useLocation = () => {
 	const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || ''
 	const [locations, setLocations] = useState<Location[] | null>(null);
-	const [zipCodes, setCodes] = useState<number[] | null>(null);
+	const [zipCodes, setZipCodes] = useState<number[] | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<null | string>(null);
 

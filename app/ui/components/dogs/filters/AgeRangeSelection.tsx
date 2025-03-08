@@ -1,35 +1,32 @@
 import React, { useContext } from 'react';
-import { AgeRangeContext } from '@/app/context/AgeRangeContext';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import './AgeRangeSelection.css';
 
 const AgeRange: React.FC = () => {
 	const {
-		ageMin,
-		ageMax,
-		ageMinEnabled,
-		ageMaxEnabled,
-		handleAgeRangeChange,
-		handleCheckboxChange,
+		params,
+		handleParamsChange,
+		handleAgeCheckboxChange,
 		MAX_AGE,
-	} = useContext(AgeRangeContext);
+	} = useContext(FiltersContext);
 
 	const handleSliderChange = (type: 'min' | 'max') => (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = parseInt(event.target.value, 10);
 		let newAgeMin, newAgeMax;
 		if (type === 'min') {
-			if (value <= ageMax) {
+			if (value <= params.ageMax) {
 				newAgeMin = value;
 			}
 		} else {
-			if (value >= ageMin) {
+			if (value >= params.ageMin) {
 				newAgeMax = value;
 			}
 		}
-		handleAgeRangeChange(newAgeMin || ageMin, newAgeMax || ageMax);
+		handleParamsChange({ ageMin: newAgeMin || params.ageMin, ageMax: newAgeMax || params.ageMax });
 	};
 
 	const handleCheckboxClick = (type: 'min' | 'max') => () => {
-		handleCheckboxChange(type);
+		handleAgeCheckboxChange(type);
 	}
 
 	return (
@@ -39,7 +36,7 @@ const AgeRange: React.FC = () => {
 				<input
 					type="checkbox"
 					name="ageMinEnabled"
-					checked={ageMinEnabled}
+					checked={params.ageMinEnabled}
 					onChange={handleCheckboxClick('min')}
 				/>
 				<label>Age Min:</label>
@@ -47,18 +44,18 @@ const AgeRange: React.FC = () => {
 					type="range"
 					min={0}
 					max={MAX_AGE}
-					value={ageMin}
+					value={params.ageMin}
 					onChange={handleSliderChange('min')}
 					name="ageMin"
-					disabled={!ageMinEnabled}
+					disabled={!params.ageMinEnabled}
 				/>
-				<span>{ageMin}</span>
+				<span>{params.ageMin}</span>
 			</div>
 			<div>
 				<input
 					type="checkbox"
 					name="ageMaxEnabled"
-					checked={ageMaxEnabled}
+					checked={params.ageMaxEnabled}
 					onChange={handleCheckboxClick('max')}
 				/>
 				<label>Age Max:</label>
@@ -66,12 +63,12 @@ const AgeRange: React.FC = () => {
 					type="range"
 					min={0}
 					max={MAX_AGE}
-					value={ageMax}
+					value={params.ageMax}
 					onChange={handleSliderChange('max')}
 					name="ageMax"
-					disabled={!ageMaxEnabled}
+					disabled={!params.ageMaxEnabled}
 				/>
-				<span>{ageMax}</span>
+				<span>{params.ageMax}</span>
 			</div>
 		</div>
 	);

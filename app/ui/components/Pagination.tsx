@@ -1,18 +1,11 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { MAX_PAGE_SIZE, DogSearchParams } from '@/app/hooks/useDogsParams';
+import useDogsParams from '@/app/hooks/useDogsParams';
 import './Pagination.css';
 
-interface PaginationProps {
-	searchResults: DogSearchParams;
-	params: URLSearchParams;
-	totalPages: number | null;
-	currentPage: number | null;
-}
-
-const Pagination: React.FC<PaginationProps> = ({ searchResults, params, totalPages, currentPage }) => {
+const Pagination: React.FC = () => {
 	const router = useRouter();
-	const size = Number(params.get('size') || MAX_PAGE_SIZE);
+	const { params, searchResults, totalPages, currentPage, size } = useDogsParams();
 
 	if (totalPages === null || currentPage === null) {
 		return null;

@@ -1,4 +1,5 @@
 import { useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SortDogsContext } from '@/app/context/SortDogsContext';
 
 export interface DogParams {
@@ -19,7 +20,8 @@ export interface DogSearchParams {
 }
 
 export const MAX_PAGE_SIZE = 25;
-export const convertURLSearchParamsToDogParams = (searchParams: URLSearchParams): DogParams => {
+
+const convertURLSearchParamsToDogParams = (searchParams: URLSearchParams): DogParams => {
 	const entries = searchParams.entries();
 
 	return Object.fromEntries(
@@ -38,43 +40,47 @@ export const convertURLSearchParamsToDogParams = (searchParams: URLSearchParams)
 	)
 }
 
-const useDogsParams = (externalParams: DogParams) => {
+const useDogsParams = () => {
+	const externalParams = useSearchParams();
+	const params = useMemo(() => new URLSearchParams(externalParams.toString()), [externalParams]);
+
 	const { DEFAULT_SORT } = useContext(SortDogsContext);
 	const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || '';
 	const [searchResults, setSearchResults] = useState<DogSearchParams | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const searchParams = convertURLSearchParamsToDogParams(params);
 
 	const queryString = useMemo(() => {
 		const queryParams = new URLSearchParams();
 
-		if (externalParams.breeds?.length) {
-			queryParams.append('breeds', externalParams.breeds.join(','));
+		if (searchParams.breeds?.length) {
+			queryParams.append('breeds', searchParams.breeds.join(','));
 		}
-		if (externalParams.zipCodes?.length) {
-			queryParams.append('zipCodes', externalParams.zipCodes.join(','));
+		if (searchParams.zipCodes?.length) {
+			queryParams.append('zipCodes', searchParams.zipCodes.join(','));
 		}
-		if (externalParams.ageMin) {
-			queryParams.append('ageMin', String(externalParams.ageMin));
+		if (searchParams.ageMin) {
+			queryParams.append('ageMin', String(searchParams.ageMin));
 		}
-		if (externalParams.ageMax) {
-			queryParams.append('ageMax', String(externalParams.ageMax));
+		if (searchParams.ageMax) {
+			queryParams.append('ageMax', String(searchParams.ageMax));
 		}
-		if (externalParams.size) {
-			queryParams.append('size', String(externalParams.size));
+		if (searchParams.size) {
+			queryParams.append('size', String(searchParams.size));
 		}
-		if (externalParams.from) {
-			queryParams.append('from', String(externalParams.from));
+		if (searchParams.from) {
+			queryParams.append('from', String(searchParams.from));
 		}
 		// default sort, since the API doesn't have a default
-		if (externalParams.sort) {
-			queryParams.append('sort', externalParams.sort);
+		if (searchParams.sort) {
+			queryParams.append('sort', searchParams.sort);
 		} else {
 			queryParams.append('sort', DEFAULT_SORT);
 		}
 
 		return queryParams.toString();
-	}, [externalParams, DEFAULT_SORT]);
+	}, [searchParams, DEFAULT_SORT]);
 
 	const fetchDogs = useCallback(async () => {
 		setLoading(true);
@@ -91,7 +97,7 @@ const useDogsParams = (externalParams: DogParams) => {
 			});
 
 			if (!response.ok) {
-					setError(`response status: ${response.status}`);
+				setError(`response status: ${response.status}`);
 			}
 
 			const data = await response.json();
@@ -107,16 +113,17 @@ const useDogsParams = (externalParams: DogParams) => {
 		fetchDogs();
 	}, [fetchDogs]);
 
-	if (!searchResults || !externalParams) {
-		return { searchResults, loading, error, totalPages: null, currentPage: null };
+	if (!searchResults || !searchParams) {
+		return { params, searchParams, searchResults, loading, error, totalPages: null, currentPage: null };
 	}
 
-	const size = externalParams.size || MAX_PAGE_SIZE;
+	const size = searchParams.size || MAX_PAGE_SIZE;
 	const totalPages = Math.ceil(searchResults.total / size);
-	const from = externalParams.from || 0;
+	const from = searchParams.from || 0;
 	const currentPage = Math.floor(from / size) + 1;
+	const hasSearchResults = searchResults.resultIds.length > 0;
 
-	return { searchResults, loading, error, totalPages, currentPage };
+	return { params, hasSearchResults, searchParams, searchResults, loading, error, totalPages, currentPage, size };
 };
 
 export default useDogsParams;

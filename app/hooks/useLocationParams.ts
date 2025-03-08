@@ -16,10 +16,6 @@ interface LocationSearchParams {
   from?: number;
 }
 
-interface GeoLocationOptions {
-  radius: number; // miles
-}
-
 const useLocationParams = () => {
 	const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || ''
 	const [locationParams, setLocationParams] = useState<LocationSearchParams | null>(null);
@@ -59,5 +55,3 @@ const useLocationParams = () => {
 };
 
 export default useLocationParams;
-
-
