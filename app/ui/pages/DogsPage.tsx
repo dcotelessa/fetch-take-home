@@ -13,10 +13,11 @@ const DogsPage = () => {
   const filtersContext = useContext(FiltersContext);
   const [loaded, setLoaded] = useState(false);
 
-  const { params, loading, error, hasSearchResults } = filtersContext;
+  const { fetchDogs, params, loading, error, hasSearchResults } = filtersContext;
 
   useEffect(() => {
     setLoaded(true);
+    fetchDogs();
   }, []);
 
   // most errors are unauthorized, so redirect to login

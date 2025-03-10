@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { createContext, useCallback, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { SelectedBreedsContext } from './SelectedBreedsContext';
 
 const MAX_AGE: number = 20;
 const DEFAULT_SORT: string = "breed:asc";
@@ -54,7 +54,7 @@ interface FiltersContextValue {
   totalPages: number | null;
   currentPage: number | null;
   size: number;
-  hasSearchResults: boolean;  
+  hasSearchResults: boolean;
 }
 
 const initParams: DogParams = {
@@ -88,7 +88,9 @@ const FiltersContext = createContext<FiltersContextValue>({
 });
 
 const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const { selectedBreeds } = useContext(SelectedBreedsContext);
 
   searchParams.forEach((value, key) => {
     if (key === 'breeds') {
@@ -166,10 +168,12 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   const updateSearchParams = (): void => {
     const newParams = new URLSearchParams();
 
+    if (selectedBreeds.length) {
+      newParams.append('breeds', selectedBreeds.join(','));
+    }
+
     Object.entries(params).forEach(([key, value]) => {
-      if (key === 'breeds') {
-        newParams.append(key, value.join(','));
-      } else if (key === 'zipCodes') {
+      if (key === 'zipCodes') {
         newParams.append(key, value.join(','));
       } else if (key === 'ageMin' || key === 'ageMax' || key === 'size') {
         newParams.append(key, value.toString());
@@ -178,7 +182,6 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    const router = useRouter();
     router.push(`/?${newParams.toString()}`);
   }
 
