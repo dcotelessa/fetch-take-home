@@ -30,7 +30,7 @@ interface GeoLocationOptions {
 }
 
 interface LocationContextValue {
-  zipCodes: string[];
+  zipCodes: string[]; // Consistent typing as string[] throughout
   locations: Location[];
   searchParams: LocationSearchParams;
   geoLocationOptions: GeoLocationOptions;
@@ -56,12 +56,14 @@ const LocationContext = createContext<LocationContextValue>({
 const LocationProvider = ({ children }: { children: React.ReactNode }) => {
   const searchParams = useSearchParams();
   
-  // Extract zipCodes from URL search params
-  const zipCodesParam = searchParams.getAll('zipCodes');
+  // Extract zipCodes from URL search params and ensure they're strings
+  const zipCodesParam = searchParams.get('zipCodes')?.split(',') || [];
 
   // Initialize state with values from URL params
-  const [zipCodes, setZipCodes] = useState<string[]>(zipCodesParam || []);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [zipCodes, setZipCodes] = useState<string[]>(zipCodesParam);
+  // Since we're not using setLocations, let's just keep locations as an empty array
+  // or we could fetch location data if needed
+  const locations: Location[] = [];
   const [locationSearchParams, setLocationSearchParams] = useState<LocationSearchParams>({});
   const [geoLocationOptions, setGeoLocationOptions] = useState<GeoLocationOptions>({ radius: 25 });
   const [useGeoLocation, setUseGeoLocation] = useState(false);
@@ -95,7 +97,7 @@ const LocationProvider = ({ children }: { children: React.ReactNode }) => {
 
   // When the component mounts, load zipCodes from URL
   useEffect(() => {
-    const zipCodesFromUrl = searchParams.getAll('zipCodes');
+    const zipCodesFromUrl = searchParams.get('zipCodes')?.split(',') || [];
     if (zipCodesFromUrl.length > 0) {
       setZipCodes(zipCodesFromUrl);
     }

@@ -53,7 +53,7 @@ interface FiltersContextValue {
   totalPages: number | null;
   currentPage: number | null;
   size: number;
-  hasSearchResults: boolean;  
+  hasSearchResults: boolean;
 }
 
 const initParams: DogParams = {
@@ -87,9 +87,9 @@ const FiltersContext = createContext<FiltersContextValue>({
 });
 
 const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
-  const router = useRouter();
+  const router = useRouter()
   const searchParams = useSearchParams();
-  
+
   // Create a mutable copy of initParams with values from URL
   const initialParams = { ...initParams };
 
@@ -110,7 +110,7 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
       initialParams.sort = value;
     }
   });
-  
+
   initialParams.ageMinEnabled = initialParams.ageMin !== 0;
   initialParams.ageMaxEnabled = initialParams.ageMax !== MAX_AGE;
 
@@ -120,24 +120,40 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   const [params, setParams] = useState<DogParams>(initialParams);
   const [searchResults, setSearchResults] = useState<DogSearchParams | null>(null);
 
-  // Calculate derived state
-  const size = params.size || DEFAULT_SIZE;
-  const totalPages = useMemo(() => {
-    if (!searchResults) return null;
-    return Math.ceil(searchResults.total / size);
-  }, [searchResults, size]);
+// Calculate derived state
+const size = params.size || DEFAULT_SIZE;
 
-  const from = params.from || 0;
-  const currentPage = useMemo(() => {
-    if (!searchResults) return null;
-    return Math.floor(from / size) + 1;
-  }, [from, size, searchResults]);
-
-  const hasSearchResults = useMemo(() => {
-    if (!searchResults) return false;
-    return searchResults.resultIds.length > 0 || false;
-  }, [searchResults]);
+// Fix: Ensure totalPages calculation is consistent and handles all edge cases
+const totalPages = useMemo(() => {
+  // No search results yet, return null to indicate pagination isn't ready
+  if (!searchResults) return null;
   
+  // If total is 0, return 0 pages
+  if (!searchResults.total) return 0;
+  
+  // Calculate total pages and ensure it's at least 1 if there are results
+  const calculated = Math.ceil(searchResults.total / size);
+  return calculated;
+}, [searchResults, size]);
+
+const from = params.from || 0;
+
+const currentPage = useMemo(() => {
+  // No search results yet, return null to indicate pagination isn't ready
+  if (!searchResults) return null;
+  
+  // If there are no results or pages, return 0
+  if (!searchResults.total || totalPages === 0) return 0;
+  
+  // Calculate current page, starting from 1
+  const calculated = Math.floor(from / size) + 1;
+  return calculated;
+}, [from, size, searchResults, totalPages]);
+
+const hasSearchResults = useMemo(() => {
+  if (!searchResults) return false;
+  return Boolean(searchResults.resultIds?.length);
+}, [searchResults]);
   const validateParams = (newParams: DogUpdateParams) => {
     // Return true if params are valid
     if (newParams.ageMin && newParams.ageMin > MAX_AGE) {
@@ -160,51 +176,51 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleAgeCheckboxChange = (type: 'min' | 'max') => {
     if (type === 'min') {
-      setParams((prevParams) => ({ 
-        ...prevParams, 
-        ageMin: prevParams.ageMinEnabled ? 0 : prevParams.ageMin, 
-        ageMinEnabled: !prevParams.ageMinEnabled 
+      setParams((prevParams) => ({
+        ...prevParams,
+        ageMin: prevParams.ageMinEnabled ? 0 : prevParams.ageMin,
+        ageMinEnabled: !prevParams.ageMinEnabled
       }));
     } else {
-      setParams((prevParams) => ({ 
-        ...prevParams, 
-        ageMax: prevParams.ageMaxEnabled ? MAX_AGE : prevParams.ageMax, 
-        ageMaxEnabled: !prevParams.ageMaxEnabled 
+      setParams((prevParams) => ({
+        ...prevParams,
+        ageMax: prevParams.ageMaxEnabled ? MAX_AGE : prevParams.ageMax,
+        ageMaxEnabled: !prevParams.ageMaxEnabled
       }));
     }
   };
 
   const buildSearchQueryString = useCallback((selectedBreeds?: string[], customZipCodes?: string[]) => {
     const queryParams = new URLSearchParams();
-    
+
     // Add breeds if they exist, prioritizing the selectedBreeds parameter if provided
     if (selectedBreeds && selectedBreeds.length > 0) {
       queryParams.set('breeds', selectedBreeds.join(','));
     } else if (params.breeds && params.breeds.length > 0) {
       queryParams.set('breeds', params.breeds.join(','));
     }
-    
+
     // Add zipCodes if they exist, prioritizing customZipCodes if provided
     if (customZipCodes && customZipCodes.length > 0) {
       queryParams.set('zipCodes', customZipCodes.join(','));
     } else if (params.zipCodes && params.zipCodes.length > 0) {
       queryParams.set('zipCodes', params.zipCodes.join(','));
     }
-    
+
     // Add age constraints if enabled
     if (params.ageMinEnabled && params.ageMin > 0) {
       queryParams.set('ageMin', params.ageMin.toString());
     }
-    
+
     if (params.ageMaxEnabled && params.ageMax < MAX_AGE) {
       queryParams.set('ageMax', params.ageMax.toString());
     }
-    
+
     // Add sort and pagination
     queryParams.set('sort', params.sort);
     queryParams.set('size', params.size.toString());
     queryParams.set('from', params.from.toString());
-    
+
     return queryParams;
   }, [params]);
 
@@ -214,33 +230,41 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   }, [buildSearchQueryString, router]);
 
   const fetchDogs = useCallback(async () => {
+    // Prevent fetching if already loading
+    if (loading) {
+      console.log("Skipping fetch: already loading");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       // Convert params to URL-compatible format
       const queryString = new URLSearchParams();
-      
+
       if (params.breeds.length > 0) {
         queryString.set('breeds', params.breeds.join(','));
       }
-      
+
       if (params.zipCodes.length > 0) {
         queryString.set('zipCodes', params.zipCodes.join(','));
       }
-      
+
       if (params.ageMinEnabled && params.ageMin > 0) {
         queryString.set('ageMin', params.ageMin.toString());
       }
-      
+
       if (params.ageMaxEnabled && params.ageMax < MAX_AGE) {
         queryString.set('ageMax', params.ageMax.toString());
       }
-      
+
       queryString.set('sort', params.sort);
       queryString.set('size', params.size.toString());
       queryString.set('from', params.from.toString());
-      
+
+      console.log(`Fetching dogs with params: ${queryString.toString()}`);
+
       const response = await fetch(`${fetchUrl}/dogs/search?${queryString.toString()}`, {
         method: 'GET',
         credentials: 'include',
@@ -257,12 +281,13 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
 
       const data = await response.json();
       setSearchResults(data);
-    } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      setError(`DOGS PARAMS ERROR: ${err.message}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      setError(`DOGS PARAMS ERROR: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
-  }, [fetchUrl, buildSearchQueryString]);
+  }, [fetchUrl, params, loading, MAX_AGE]);
 
   return (
     <FiltersContext.Provider value={{

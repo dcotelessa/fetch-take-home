@@ -46,7 +46,6 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
     geoLocationOptions,
     useGeoLocation,
     handleUseGeoLocationChange,
-    handleSearchParamsChange, 
     handleGeoLocationOptionsChange 
   } = useContext(LocationContext);
 

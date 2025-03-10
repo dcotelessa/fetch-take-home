@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { FiltersContext } from '@/app/context/FiltersContext';
 import { SelectedBreedsContext } from '@/app/context/SelectedBreedsContext';
 import { LocationContext } from '@/app/context/LocationContext';
@@ -9,9 +9,14 @@ const DogSearchFilters: React.FC = () => {
   const filtersContext = useContext(FiltersContext);
   const selectedBreedsContext = useContext(SelectedBreedsContext);
   const locationContext = useContext(LocationContext);
+  // Add a ref to track if we've already synced/fetched
+  const initialSyncDone = useRef(false);
 
   // On mount, sync up the contexts if needed
   useEffect(() => {
+    // Skip if we've already done the initial sync
+    if (initialSyncDone.current) return;
+    
     // If there are breeds in URL params but not in SelectedBreedsContext, sync them
     if (filtersContext.params.breeds.length > 0 && 
         selectedBreedsContext.selectedBreeds.length === 0) {
@@ -35,18 +40,14 @@ const DogSearchFilters: React.FC = () => {
         locationContext.handleZipCodeChange(zipCode);
       });
     }
+    
+    // Mark that we've completed the initial sync
+    initialSyncDone.current = true;
   }, [filtersContext.params, selectedBreedsContext, locationContext]);
 
-  // Load dogs when filters change
-  useEffect(() => {
-    // Fetch dogs only after component is mounted and contexts are synced
-    const timer = setTimeout(() => {
-      filtersContext.fetchDogs();
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [filtersContext.fetchDogs]);
-
+  // IMPORTANT: We've removed the useEffect that was fetching dogs
+  // This prevents double fetching since DogsPage is already doing the initial fetch
+  
   // Simply render the Filters component
   return <FiltersComponent />;
 };
