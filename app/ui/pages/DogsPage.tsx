@@ -1,18 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import LoadingIcon from '../components/icons/LoadingIcon';
-import useDogsParams from '@/app/hooks/useDogsParams';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import DogsList from '../components/dogs/DogsList';
+import LoadingIcon from '../components/icons/LoadingIcon';
 import Header from '../components/dogs/Header';
 import Pagination from '../components/Pagination';
 
 const DogsPage = () => {
   const router = useRouter();
+  const filtersContext = useContext(FiltersContext);
   const [loaded, setLoaded] = useState(false);
 
-  const { params, hasSearchResults, loading, error } = useDogsParams();
+  const { params, loading, error, hasSearchResults } = filtersContext;
 
   useEffect(() => {
     setLoaded(true);
