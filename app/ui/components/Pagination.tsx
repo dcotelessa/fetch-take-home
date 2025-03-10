@@ -13,47 +13,95 @@ const Pagination: React.FC = () => {
 
 	const handlePageChange = (page: number) => {
 		const from = (page - 1) * size;
-		const newParams = new URLSearchParams(params.toString());
-		newParams.delete('size');
-		newParams.delete('from');
-		newParams.set('size', size.toString());
-		newParams.set('from', from.toString());
-		router.push(`?${newParams.toString()}`);
+		
+		// Create URLSearchParams to build the query
+		const queryParams = new URLSearchParams();
+		
+		console.log("Pagination - Current params:", params); // Debugging
+		
+		// Add all current params
+		if (params.breeds.length > 0) {
+			console.log("Pagination - Adding breeds:", params.breeds.join(',')); // Debugging
+			queryParams.set('breeds', params.breeds.join(','));
+		}
+		
+		if (params.zipCodes.length > 0) {
+			queryParams.set('zipCodes', params.zipCodes.join(','));
+		}
+		
+		if (params.ageMinEnabled && params.ageMin > 0) {
+			queryParams.set('ageMin', params.ageMin.toString());
+		}
+		
+		if (params.ageMaxEnabled && params.ageMax < 20) {
+			queryParams.set('ageMax', params.ageMax.toString());
+		}
+		
+		// Add sort if it's not the default
+		if (params.sort !== 'breed:asc') {
+			queryParams.set('sort', params.sort);
+		}
+		
+		// Update with new pagination values
+		queryParams.set('size', size.toString());
+		queryParams.set('from', from.toString());
+		
+		console.log("Pagination - Final query:", queryParams.toString()); // Debugging
+		
+		// Navigate to the new URL
+		router.push(`/?${queryParams.toString()}`);
 	};
 
-	const buttons = Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-		<button key={page} onClick={() => handlePageChange(page)} className={currentPage === page ? 'active' : ''}>
-			{page}
-		</button>
-	));
+	const buttonsToShow = 5; // Total number of page buttons to show
+	const halfButtonsToShow = Math.floor(buttonsToShow / 2);
+	
+	// Calculate range of buttons to display
+	let startPage = Math.max(1, currentPage - halfButtonsToShow);
+	const endPage = Math.min(totalPages, startPage + buttonsToShow - 1);
+	
+	// Adjust start page if we're near the end
+	if (endPage - startPage + 1 < buttonsToShow) {
+		startPage = Math.max(1, endPage - buttonsToShow + 1);
+	}
+	
+	// Generate visible page buttons
+	const visibleButtons = [];
+	for (let i = startPage; i <= endPage; i++) {
+		visibleButtons.push(
+			<button 
+				key={i} 
+				onClick={() => handlePageChange(i)} 
+				className={currentPage === i ? 'active' : ''}
+			>
+				{i}
+			</button>
+		);
+	}
 
-	// Filter the buttons to only show range around current page
-	const filteredPrevButtons = buttons.slice(Math.max(currentPage - 6, 0), Math.max(currentPage - 1, 0));
-
-	const filteredNextButtons = buttons.slice(currentPage, currentPage + 4);
-
-	// with filters searchResults prev and next are not reliable
-	const next = params.from + size;
-	const hasNext = next < searchResults.total;
-	const hasPrev = params.from >= size;
-
-	const hasFirst = currentPage > 6;
-	const hasLast = currentPage + 4 < totalPages;
+	// Calculate if we should show prev/next buttons
+	const hasNext = currentPage < totalPages;
+	const hasPrev = currentPage > 1;
+	
+	// Determine if we should show first/last page buttons
+	const hasFirst = startPage > 1;
+	const hasLast = endPage < totalPages;
 
 	return (
 		<div className="pagination">
 			{hasFirst && (
 				<button onClick={() => handlePageChange(1)}>First</button>
 			)}
-			{filteredPrevButtons}
+			
 			{hasPrev && (
-				<button onClick={() => handlePageChange(currentPage - 1)}>◂ {currentPage - 1}</button>
+				<button onClick={() => handlePageChange(currentPage - 1)}>◂ Prev</button>
 			)}
-			<button disabled>{currentPage}</button>
+			
+			{visibleButtons}
+			
 			{hasNext && (
-				<button onClick={() => handlePageChange(currentPage + 1)}>{currentPage + 1} ▸</button>
+				<button onClick={() => handlePageChange(currentPage + 1)}>Next ▸</button>
 			)}
-			{filteredNextButtons}
+			
 			{hasLast && (
 				<button onClick={() => handlePageChange(totalPages)}>Last</button>
 			)}

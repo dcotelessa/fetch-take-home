@@ -7,6 +7,8 @@
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 10px;
   padding: 10px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .breed-item {
@@ -21,11 +23,33 @@
 }
 
 .breed-item.selected {
-  background-color: #000;
+  background-color: #e6e6ff;
+  border-radius: 4px;
 }
 
 .breed-item span {
   font-size: 16px;
+}
+
+.apply-breeds-button {
+  display: block;
+  margin: 15px auto 5px;
+  padding: 8px 16px;
+  background-color: #66f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.apply-breeds-button:hover {
+  background-color: #55e;
+}
+
+.apply-breeds-button:active {
+  background-color: #44d;
+  transform: translateY(1px);
 }
 
 /* Mobile version */
@@ -45,4 +69,3 @@
     padding: 2px;
   }
 }
-

@@ -5,7 +5,7 @@ import './BreedsSelection.css';
 
 const BreedsSelection: React.FC = () => {
 	const { breeds, error } = useDogsBreeds();
-	const { selectedBreeds, handleBreedChange } = useContext(SelectedBreedsContext);
+	const { selectedBreeds, handleBreedChange, applyBreedChanges } = useContext(SelectedBreedsContext);
 	const [filterText, setFilterText] = useState('');
 
 	const handleFilterTextChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +52,14 @@ const BreedsSelection: React.FC = () => {
 			<div className="filters-grid">
 				{renderedBreeds}
 			</div>
+			{selectedBreeds.length > 0 && (
+				<button 
+					className="apply-breeds-button" 
+					onClick={applyBreedChanges}
+				>
+					Apply {selectedBreeds.length} breed filters
+				</button>
+			)}
 		</div>
 	);
 };

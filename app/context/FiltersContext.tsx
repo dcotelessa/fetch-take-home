@@ -1,8 +1,7 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SelectedBreedsContext } from './SelectedBreedsContext';
 
 const MAX_AGE: number = 20;
 const DEFAULT_SORT: string = "breed:asc";
@@ -47,14 +46,14 @@ interface FiltersContextValue {
   params: DogParams;
   fetchDogs: () => void;
   searchResults: DogSearchParams | null;
-  updateSearchParams: () => void;
+  updateSearchParams: (selectedBreeds?: string[]) => void;
   MAX_AGE: number;
   DEFAULT_SIZE: number,
   DEFAULT_SORT: string,
   totalPages: number | null;
   currentPage: number | null;
   size: number;
-  hasSearchResults: boolean;
+  hasSearchResults: boolean;  
 }
 
 const initParams: DogParams = {
@@ -90,34 +89,35 @@ const FiltersContext = createContext<FiltersContextValue>({
 const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { selectedBreeds } = useContext(SelectedBreedsContext);
+  
+  // Create a mutable copy of initParams with values from URL
+  const initialParams = { ...initParams };
 
   searchParams.forEach((value, key) => {
     if (key === 'breeds') {
-      initParams[key] = value.split(',');
+      initialParams.breeds = value.split(',');
     }
 
     if (key === 'zipCodes') {
-      initParams[key] = value.split(',');
+      initialParams.zipCodes = value.split(',');
     }
 
     if (key === 'ageMin' || key === 'ageMax' || key === 'from' || key === 'size') {
-      initParams[key] = parseInt(value, 10);
+      initialParams[key] = parseInt(value, 10);
     }
 
     if (key === 'sort') {
-      initParams[key] = value;
-    } else {
-      initParams['sort'] = DEFAULT_SORT;
+      initialParams.sort = value;
     }
   });
-  initParams['ageMinEnabled'] = initParams.ageMin !== 0;
-  initParams['ageMaxEnabled'] = initParams.ageMax !== MAX_AGE;
+  
+  initialParams.ageMinEnabled = initialParams.ageMin !== 0;
+  initialParams.ageMaxEnabled = initialParams.ageMax !== MAX_AGE;
 
   const fetchUrl = process.env.NEXT_PUBLIC_FETCH_URL || '';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [params, setParams] = useState<DogParams>(initParams);
+  const [params, setParams] = useState<DogParams>(initialParams);
   const [searchResults, setSearchResults] = useState<DogSearchParams | null>(null);
 
   // Calculate derived state
@@ -137,8 +137,9 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
     if (!searchResults) return false;
     return searchResults.resultIds.length > 0 || false;
   }, [searchResults]);
+  
   const validateParams = (newParams: DogUpdateParams) => {
-    // TODO: Needs more validation
+    // Return true if params are valid
     if (newParams.ageMin && newParams.ageMin > MAX_AGE) {
       return false;
     }
@@ -151,7 +152,7 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const handleParamsChange = (newParams: DogUpdateParams) => {
-    if (validateParams(newParams)) {
+    if (!validateParams(newParams)) {
       return;
     }
     setParams({ ...params, ...newParams });
@@ -159,38 +160,88 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleAgeCheckboxChange = (type: 'min' | 'max') => {
     if (type === 'min') {
-      setParams((prevParams) => ({ ...prevParams, ageMax: prevParams.ageMinEnabled ? 0 : prevParams.ageMin, ageMinEnabled: !prevParams.ageMinEnabled }));
+      setParams((prevParams) => ({ 
+        ...prevParams, 
+        ageMin: prevParams.ageMinEnabled ? 0 : prevParams.ageMin, 
+        ageMinEnabled: !prevParams.ageMinEnabled 
+      }));
     } else {
-      setParams((prevParams) => ({ ...prevParams, ageMax: prevParams.ageMaxEnabled ? MAX_AGE : prevParams.ageMax, ageMaxEnabled: !prevParams.ageMaxEnabled }));
+      setParams((prevParams) => ({ 
+        ...prevParams, 
+        ageMax: prevParams.ageMaxEnabled ? MAX_AGE : prevParams.ageMax, 
+        ageMaxEnabled: !prevParams.ageMaxEnabled 
+      }));
     }
   };
 
-  const updateSearchParams = (): void => {
-    const newParams = new URLSearchParams();
-
-    if (selectedBreeds.length) {
-      newParams.append('breeds', selectedBreeds.join(','));
+  const buildSearchQueryString = useCallback((selectedBreeds?: string[], customZipCodes?: string[]) => {
+    const queryParams = new URLSearchParams();
+    
+    // Add breeds if they exist, prioritizing the selectedBreeds parameter if provided
+    if (selectedBreeds && selectedBreeds.length > 0) {
+      queryParams.set('breeds', selectedBreeds.join(','));
+    } else if (params.breeds && params.breeds.length > 0) {
+      queryParams.set('breeds', params.breeds.join(','));
     }
+    
+    // Add zipCodes if they exist, prioritizing customZipCodes if provided
+    if (customZipCodes && customZipCodes.length > 0) {
+      queryParams.set('zipCodes', customZipCodes.join(','));
+    } else if (params.zipCodes && params.zipCodes.length > 0) {
+      queryParams.set('zipCodes', params.zipCodes.join(','));
+    }
+    
+    // Add age constraints if enabled
+    if (params.ageMinEnabled && params.ageMin > 0) {
+      queryParams.set('ageMin', params.ageMin.toString());
+    }
+    
+    if (params.ageMaxEnabled && params.ageMax < MAX_AGE) {
+      queryParams.set('ageMax', params.ageMax.toString());
+    }
+    
+    // Add sort and pagination
+    queryParams.set('sort', params.sort);
+    queryParams.set('size', params.size.toString());
+    queryParams.set('from', params.from.toString());
+    
+    return queryParams;
+  }, [params]);
 
-    Object.entries(params).forEach(([key, value]) => {
-      if (key === 'zipCodes') {
-        newParams.append(key, value.join(','));
-      } else if (key === 'ageMin' || key === 'ageMax' || key === 'size') {
-        newParams.append(key, value.toString());
-      } else if (key === 'from' || key === 'sort') {
-        newParams.append(key, value);
-      }
-    });
-
-    router.push(`/?${newParams.toString()}`);
-  }
+  const updateSearchParams = useCallback((selectedBreeds?: string[], customZipCodes?: string[]): void => {
+    const queryParams = buildSearchQueryString(selectedBreeds, customZipCodes);
+    router.push(`/?${queryParams.toString()}`);
+  }, [buildSearchQueryString, router]);
 
   const fetchDogs = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`${fetchUrl}/dogs/search?${searchParams.toString()}`, {
+      // Convert params to URL-compatible format
+      const queryString = new URLSearchParams();
+      
+      if (params.breeds.length > 0) {
+        queryString.set('breeds', params.breeds.join(','));
+      }
+      
+      if (params.zipCodes.length > 0) {
+        queryString.set('zipCodes', params.zipCodes.join(','));
+      }
+      
+      if (params.ageMinEnabled && params.ageMin > 0) {
+        queryString.set('ageMin', params.ageMin.toString());
+      }
+      
+      if (params.ageMaxEnabled && params.ageMax < MAX_AGE) {
+        queryString.set('ageMax', params.ageMax.toString());
+      }
+      
+      queryString.set('sort', params.sort);
+      queryString.set('size', params.size.toString());
+      queryString.set('from', params.from.toString());
+      
+      const response = await fetch(`${fetchUrl}/dogs/search?${queryString.toString()}`, {
         method: 'GET',
         credentials: 'include',
         mode: 'cors',
@@ -201,6 +252,7 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (!response.ok) {
         setError(`response status: ${response.status}`);
+        return;
       }
 
       const data = await response.json();
@@ -210,8 +262,7 @@ const FiltersProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchUrl, searchParams]);
-
+  }, [fetchUrl, buildSearchQueryString]);
 
   return (
     <FiltersContext.Provider value={{

@@ -1,8 +1,8 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiltersContext } from '@/app/context/FiltersContext';
+import useDogsParams from '@/app/hooks/useDogsParams';
 import DogsList from '../components/dogs/DogsList';
 import LoadingIcon from '../components/icons/LoadingIcon';
 import Header from '../components/dogs/Header';
@@ -10,20 +10,19 @@ import Pagination from '../components/Pagination';
 
 const DogsPage = () => {
   const router = useRouter();
-  const filtersContext = useContext(FiltersContext);
   const [loaded, setLoaded] = useState(false);
-
-  const { fetchDogs, params, loading, error, hasSearchResults } = filtersContext;
+  const { params, loading, error, hasSearchResults, fetchDogs } = useDogsParams();
 
   useEffect(() => {
     setLoaded(true);
+    // Initial fetch of dogs
     fetchDogs();
-  }, []);
+  }, [fetchDogs]);
 
   // most errors are unauthorized, so redirect to login
   useEffect(() => {
     if (error) {
-      router.push(`/login?${params.toString()}`);
+      router.push(`/login?${new URLSearchParams(params).toString()}`);
     }
   }, [error, router, params]);
 
@@ -50,12 +49,17 @@ const DogsPage = () => {
 
   return (
     <div className="dogs page-root">
-      {hasSearchResults && (
+      <Header />
+      {hasSearchResults ? (
         <>
-          <Header />
           <DogsList />
           <Pagination />
         </>
+      ) : (
+        <div className="no-results">
+          <p>No dogs found matching your criteria.</p>
+          <p>Try adjusting your filters.</p>
+        </div>
       )}
     </div>
   );

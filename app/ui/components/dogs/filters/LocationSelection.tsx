@@ -1,5 +1,6 @@
 import React, { useState, useContext, useCallback } from 'react';
 import { LocationContext } from '@/app/context/LocationContext';
+import { FiltersContext } from '@/app/context/FiltersContext';
 import './LocationSelection.css';
 
 const US_STATES = [
@@ -49,6 +50,8 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
     handleGeoLocationOptionsChange 
   } = useContext(LocationContext);
 
+  const { updateSearchParams } = useContext(FiltersContext);
+
   const [zipCodeInput, setZipCodeInput] = useState<string>('');
   const [city, setCity] = useState<string>('');
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
@@ -67,6 +70,8 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
       const newZipCode = zipCodeInput.trim();
       if (typeof handleZipCodeChange === 'function') {
         handleZipCodeChange(newZipCode);
+        // Update search params with new zipCodes
+        updateSearchParams(undefined, [...zipCodes, newZipCode]);
       }
       setZipCodeInput('');
     }
@@ -76,8 +81,11 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
   const handleRemoveZipCode = useCallback((zipCode: string) => {
     if (typeof handleZipCodeChange === 'function') {
       handleZipCodeChange(zipCode);
+      // Update search params with filtered zipCodes
+      const updatedZipCodes = zipCodes.filter(code => code !== zipCode);
+      updateSearchParams(undefined, updatedZipCodes);
     }
-  }, [handleZipCodeChange]);
+  }, [handleZipCodeChange, zipCodes, updateSearchParams]);
 
   // Handle city input change
   const handleCityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,12 +120,21 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
       // This would be replaced with your real API call
       const newZipCodes = await fetchZipCodesByCityState(city, selectedStates);
       
+      // Track which zipCodes were newly added
+      const addedZipCodes: string[] = [];
+      
       // Add the returned zip codes to our selected zip codes
       newZipCodes.forEach(zipCode => {
         if (!zipCodes.includes(zipCode)) {
           handleZipCodeChange(zipCode);
+          addedZipCodes.push(zipCode);
         }
       });
+      
+      // Update search params with combined zipCodes
+      if (addedZipCodes.length > 0) {
+        updateSearchParams(undefined, [...zipCodes, ...addedZipCodes]);
+      }
       
       // Switch to zip code tab to show results
       setActiveTab('zipCode');
@@ -155,12 +172,21 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
             try {
               const newZipCodes = await fetchZipCodesByGeoLocation(latitude, longitude, radius);
               
+              // Track which zipCodes were newly added
+              const addedZipCodes: string[] = [];
+              
               // Add the returned zip codes
               newZipCodes.forEach(zipCode => {
                 if (!zipCodes.includes(zipCode)) {
                   handleZipCodeChange(zipCode);
+                  addedZipCodes.push(zipCode);
                 }
               });
+              
+              // Update search params with combined zipCodes
+              if (addedZipCodes.length > 0) {
+                updateSearchParams(undefined, [...zipCodes, ...addedZipCodes]);
+              }
               
               // Switch to zip code tab to show results
               setActiveTab('zipCode');
@@ -195,7 +221,7 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
         handleUseGeoLocationChange(false);
       }
     }
-  }, [useGeoLocation, zipCodes, handleUseGeoLocationChange, handleZipCodeChange, geoLocationOptions]);
+  }, [useGeoLocation, zipCodes, handleUseGeoLocationChange, handleZipCodeChange, geoLocationOptions, updateSearchParams]);
 
   // Handle radius change and update search
   const handleRadiusChange = async (radius: number) => {
@@ -217,16 +243,21 @@ const LocationSelection: React.FC<LocationSelectionProps> = ({
           try {
             const newZipCodes = await fetchZipCodesByGeoLocation(latitude, longitude, radius);
             
-            // Clear existing geolocation-based zip codes
-            // This is a simplification - in a real app you'd track which zip codes came from geo
-            // and only remove those before adding the new ones
+            // Track which zipCodes were newly added
+            const addedZipCodes: string[] = [];
             
             // Add the new zip codes
             newZipCodes.forEach(zipCode => {
               if (!zipCodes.includes(zipCode)) {
                 handleZipCodeChange(zipCode);
+                addedZipCodes.push(zipCode);
               }
             });
+            
+            // Update search params with combined zipCodes
+            if (addedZipCodes.length > 0) {
+              updateSearchParams(undefined, [...zipCodes, ...addedZipCodes]);
+            }
             
             // Switch to zip code tab to show results
             setActiveTab('zipCode');

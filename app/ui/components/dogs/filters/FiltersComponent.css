@@ -16,6 +16,7 @@
   border: 1px solid #ddd;
   padding: 10px;
   display: flex;
+  flex-direction: column;
   gap: 20px;
   width: 98vw;
   z-index: 10;
@@ -42,10 +43,63 @@
 }
 
 .filters-dropdown .filters-column {
-  width: 50%;
+  width: 100%;
   border: 1px solid #ddd;
   padding: 10px;
   box-sizing: border-box;
+}
+
+.filters-dropdown .filters-content {
+  display: flex;
+  gap: 20px;
+}
+
+.filters-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 20px;
+}
+
+.apply-filters-button,
+.close-filters-button {
+  padding: 10px 20px;
+  background-color: #66f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.apply-filters-button:hover,
+.close-filters-button:hover {
+  background-color: #55e;
+}
+
+.apply-filters-button:active,
+.close-filters-button:active {
+  background-color: #44d;
+  transform: translateY(1px);
+}
+
+.close-filters-button {
+  background-color: #666;
+}
+
+.close-filters-button:hover {
+  background-color: #555;
+}
+
+@media (min-width: 1024px) {
+  .filters-dropdown {
+    flex-direction: row;
+  }
+  
+  .filters-dropdown .filters-column {
+    width: 50%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -63,6 +117,11 @@
   .filters-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+  
+  .filters-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -72,6 +131,12 @@
   
   .filters-buttons button {
     padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .apply-filters-button,
+  .close-filters-button {
+    padding: 8px 16px;
     font-size: 14px;
   }
 }
